@@ -811,9 +811,16 @@ function startAudio(){
     alert("Нет карточек для воспроизведения.");
     return;
   }
+
+  // 💥 ВАЖНО: разбудить голос
+  speechSynthesis.cancel();
+
   audioRunning = true;
   audioIndex = 0;
-  playAudioSequence();
+
+  setTimeout(() => {
+    playAudioSequence();
+  }, 200);
 }
 
 function stopAudio(){
