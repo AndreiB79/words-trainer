@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Words Trainer Stable Plus v2</title>
+  <style>
+    :root{
+      --bg:#f4f7ff; --card:#fff; --text:#162236; --muted:#62708a; --line:#d9e3f3;
+      --accent:#2563eb; --accent-soft:#eaf2ff; --good:#16a34a; --warn:#ea580c; --danger:#dc2626;
+      --shadow:0 14px 36px rgba(22,34,54,.10); --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:linear-gradient(180deg,#f9fbff 0%, #eef4ff 100%);color:var(--text)}
+    .wrap{max-width:1050px;margin:0 auto;padding:16px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,#2563eb,#60a5fa);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;box-shadow:var(--shadow)}
+    .brand h1{margin:0;font-size:24px}
+    .brand p{margin:4px 0 0;color:var(--muted);font-size:13px}
+    .pill{background:var(--accent-soft);color:var(--accent);border:1px solid #cfe0ff;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:800}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin-bottom:14px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{appearance:none;border:1px solid var(--line);background:#fff;color:var(--text);border-radius:999px;padding:10px 14px;font-size:14px;font-weight:800;cursor:pointer}
+    .tab.active{background:var(--accent-soft);color:var(--accent);border-color:#cfe0ff}
+    .tab-pane{display:none}
+    .tab-pane.active{display:block}
+    .search,input,textarea,select{
+      width:100%;border:1px solid var(--line);background:#fff;color:var(--text);
+      border-radius:16px;padding:12px 13px;font-size:15px;outline:none;
+    }
+    .search:focus,input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+    textarea{min-height:120px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+    .two{display:grid;grid-template-columns:1fr;gap:14px}
+    .card{
+      min-height:300px;border-radius:28px;border:1px solid var(--line);background:linear-gradient(180deg,#fff 0%, #f9fbff 100%);
+      box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;position:relative;cursor:pointer;
+    }
+    .badge{position:absolute;left:14px;top:14px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:12px;color:var(--muted)}
+    .word{font-size:46px;font-weight:900;line-height:1.1;margin-bottom:10px}
+    .phon{font-size:18px;color:var(--accent);font-weight:700;margin-bottom:10px}
+    .meta{font-size:16px;color:var(--muted);line-height:1.45}
+    .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+    button{appearance:none;border:none;border-radius:16px;padding:13px 12px;font-size:15px;font-weight:850;cursor:pointer;background:var(--accent);color:#fff}
+    button.secondary{background:#fff;color:var(--text);border:1px solid var(--line)}
+    button.good{background:var(--good)}
+    button.warn{background:var(--warn)}
+    button.danger{background:var(--danger)}
+    .list{display:grid;gap:8px;max-height:380px;overflow:auto}
+    .item{background:#f9fbff;border:1px solid var(--line);border-radius:14px;padding:11px 12px;cursor:pointer}
+    .item.active{background:#eaf2ff;border-color:#cfe0ff}
+    .item .ru{font-weight:850}
+    .item .en{font-size:13px;color:var(--muted);margin-top:4px}
+    .small{font-size:12px;color:var(--muted);line-height:1.5}
+    .sp8{height:8px}
+    .chips{margin-top:10px}
+    .chip{display:inline-block;background:#f9fbff;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700;margin:4px 6px 0 0}
+    .quiz-options{display:grid;gap:10px;margin-top:14px}
+    .quiz-option{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 12px;font-size:15px;font-weight:700;color:var(--text);cursor:pointer}
+    .quiz-option.correct{background:#ecfdf3;border-color:#86efac;color:#166534}
+    .quiz-option.wrong{background:#fef2f2;border-color:#fca5a5;color:#991b1b}
+    .score{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+    .score span{background:#f9fbff;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:13px;font-weight:800}
+    @media (min-width:900px){.two{grid-template-columns:1.15fr .85fr}.actions{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <div class="logo">W</div>
+        <div>
+          <h1>Words Trainer</h1>
+          <p>Стабильная локальная версия с голосами, повторением и управлением</p>
+        </div>
+      </div>
+      <div class="pill">stable plus v2</div>
+    </div>
+
+    <div class="panel">
+      <input id="search" class="search" type="text" placeholder="Поиск по русскому или английскому слову..." />
+      <div class="tabs" style="margin-top:10px">
+        <button class="tab active" data-tab="study">📘 Учить</button>
+        <button class="tab" data-tab="review">🔁 Повторение</button>
+        <button class="tab" data-tab="quiz">🧠 Quiz</button>
+        <button class="tab" data-tab="manage">⚙️ Управление</button>
+        <button class="tab" data-tab="voice">🔊 Голос</button>
+      </div>
+    </div>
+
+    <div id="studyView" class="tab-pane active">
+      <div class="two">
+        <div>
+          <div class="card" id="card">
+            <div class="badge" id="cardBadge">Лицевая сторона</div>
+            <div>
+              <div class="word" id="cardWord">Выбери карточку</div>
+              <div class="phon" id="cardPhon"></div>
+              <div class="meta" id="cardMeta">Список карточек справа.</div>
+              <div class="chips" id="cardDetails"></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button id="speakEnBtn">🔊 English</button>
+            <button class="secondary" id="speakRuBtn">🔊 Русский</button>
+            <button class="secondary" id="flipBtn">Перевернуть</button>
+            <button class="secondary" id="nextBtn">Следующая</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="small" id="countText">Найдено карточек: 0</div>
+          <div class="list" id="list" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="reviewView" class="tab-pane">
+      <div class="two">
+        <div>
+          <div class="card" id="reviewCard">
+            <div class="badge">Повторение</div>
+            <div>
+              <div class="word" id="reviewWord">Нажми “Начать”</div>
+              <div class="phon" id="reviewPhon"></div>
+              <div class="meta" id="reviewMeta">Будут показаны карточки, которые ты отметил сложными.</div>
+              <div class="chips" id="reviewDetails"></div>
+            </div>
+          </div>
+          <div class="actions">
+            <button id="startReviewBtn">Начать</button>
+            <button class="secondary" id="reviewSpeakEnBtn">🔊 English</button>
+            <button class="secondary" id="reviewSpeakRuBtn">🔊 Русский</button>
+            <button class="secondary" id="reviewFlipBtn">Перевернуть</button>
+            <button class="warn" id="markHardBtn">Сложно</button>
+            <button class="good" id="markLearnedBtn">Выучил</button>
+            <button class="secondary" id="reviewNextBtn">Следующая</button>
+            <button class="secondary" id="clearReviewBtn">Очистить список</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="small">В этом стабильном режиме повторения используются слова из списка “сложных”.</div>
+          <div class="list" id="reviewList" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="quizView" class="tab-pane">
+      <div class="two">
+        <div class="panel">
+          <div class="score">
+            <span id="quizProgress">0 / 0</span>
+            <span id="quizCorrect">✅ 0</span>
+            <span id="quizWrong">❌ 0</span>
+          </div>
+          <div>
+            <div class="small" style="margin-bottom:6px;">Тип теста</div>
+            <select id="quizMode">
+              <option value="mc_en_ru">English → Russian</option>
+              <option value="mc_ru_en">Russian → English</option>
+              <option value="typing_ru_en">Russian → English (ввод)</option>
+            </select>
+          </div>
+          <div class="sp8"></div>
+          <div>
+            <div class="small" style="margin-bottom:6px;">Количество вопросов</div>
+            <select id="quizLength">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="15">15</option>
+            </select>
+          </div>
+          <div class="actions" style="margin-top:12px">
+            <button id="startQuizBtn">Начать тест</button>
+            <button class="secondary" id="nextQuizBtn">Следующий</button>
+            <button class="secondary" id="speakQuizBtn">🔊 Озвучить</button>
+            <button class="warn" id="resetQuizBtn">Сбросить тест</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="word" id="quizQuestion" style="font-size:38px">Нажми “Начать тест”</div>
+          <div class="meta" id="quizHint">После старта здесь появится вопрос.</div>
+          <div id="quizOptions" class="quiz-options" style="display:none"></div>
+          <div id="quizTyping" style="display:none;margin-top:14px">
+            <input id="quizInput" type="text" placeholder="Введи английское слово..." />
+            <div class="actions" style="margin-top:10px">
+              <button id="submitQuizBtn">Проверить</button>
+              <button class="secondary" id="showAnswerBtn">Показать ответ</button>
+            </div>
+          </div>
+          <div id="quizResult" style="margin-top:12px;font-weight:800"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="manageView" class="tab-pane">
+      <div class="two">
+        <div class="panel">
+          <div style="font-weight:900;margin-bottom:10px">Добавить карточку</div>
+          <input id="newRu" type="text" placeholder="Русское слово / фраза" />
+          <div class="sp8"></div>
+          <input id="newEn" type="text" placeholder="English word / phrase" />
+          <div class="sp8"></div>
+          <input id="newPhon" type="text" placeholder="Транскрипция (необязательно)" />
+          <div class="sp8"></div>
+          <input id="newPos" type="text" placeholder="Part of speech / часть речи" />
+          <div class="sp8"></div>
+          <input id="newForms" type="text" placeholder="Forms / формы" />
+          <div class="sp8"></div>
+          <input id="newExample" type="text" placeholder="Example / пример" />
+          <div class="sp8"></div>
+          <input id="newNote" type="text" placeholder="Note / заметка" />
+          <div class="actions" style="margin-top:12px">
+            <button class="secondary" id="autofillBtn">Автозаполнить</button>
+            <button class="secondary" id="restoreDemoBtn">Вернуть демо</button>
+            <button class="good" id="addBtn">Добавить карточку</button>
+            <button class="secondary" id="clearAllBtn">Очистить всё</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div style="font-weight:900;margin-bottom:10px">Импорт / экспорт</div>
+          <textarea id="jsonBox" placeholder='[{"ru":"забыть","en":"forget"}]'></textarea>
+          <div class="actions" style="margin-top:12px">
+            <button class="secondary" id="exportBtn">Экспорт</button>
+            <button class="secondary" id="importBtn">Импорт</button>
+            <button class="secondary" id="downloadBtn">Скачать backup</button>
+          </div>
+          <div class="small" style="margin-top:10px">
+            Всё хранится в localStorage этого браузера. Голосовые настройки тоже.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="voiceView" class="tab-pane">
+      <div class="two">
+        <div class="panel">
+          <div style="font-weight:900;margin-bottom:10px">Настройки голоса</div>
+          <div>
+            <div class="small" style="margin-bottom:6px;">Режим выбора</div>
+            <select id="voiceMode">
+              <option value="auto">Auto best voice</option>
+              <option value="female">Prefer female</option>
+              <option value="male">Prefer male</option>
+              <option value="exact">Exact voice</option>
+            </select>
+          </div>
+          <div class="sp8"></div>
+          <div>
+            <div class="small" style="margin-bottom:6px;">Скорость</div>
+            <select id="voiceRate">
+              <option value="0.8">0.80 — очень медленно</option>
+              <option value="0.9">0.90 — медленно</option>
+              <option value="1" selected>1.00 — нормально</option>
+              <option value="1.1">1.10 — чуть быстрее</option>
+              <option value="1.2">1.20 — быстро</option>
+            </select>
+          </div>
+          <div class="sp8"></div>
+          <div>
+            <div class="small" style="margin-bottom:6px;">Конкретный английский голос</div>
+            <select id="voiceExact"></select>
+          </div>
+          <div class="actions" style="margin-top:12px">
+            <button id="saveVoiceBtn">Сохранить настройки</button>
+            <button class="secondary" id="refreshVoicesBtn">Обновить список</button>
+            <button class="secondary" id="testVoiceBtn">Тест English</button>
+            <button class="secondary" id="testRuBtn">Тест русского</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div style="font-weight:900;margin-bottom:10px">Текущий статус</div>
+          <div class="small" id="voiceStatus">Загружаю голоса...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const CARD_KEY = "words_trainer_stable_plus_v2_cards";
+const REVIEW_KEY = "words_trainer_stable_plus_v2_review";
+const VOICE_KEY = "words_trainer_stable_plus_v2_voice";
+
+function mk(ru,en,phonetic="",partOfSpeech="",forms="",example="",note=""){
+  return {id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),ru,en,phonetic,partOfSpeech,forms,example,note};
+}
+const demoCards = [
+  mk("забыть","forget","/fərˈɡet/","verb","forget • forgot • forgotten • forgetting","I forgot my keys.","перестать помнить что-то"),
+  mk("встречаться","meet up","/miːt ʌp/","phrasal verb","meet up • met up • met up","Let's meet up tomorrow.","встречаться"),
+  mk("совпадение","what a coincidence","/ˌkoʊˈɪnsɪdəns/","phrase","","What a coincidence!","какое совпадение"),
+  mk("доход","income","/ˈɪnkʌm/","noun","singular: income","My income is stable.","доход"),
+  mk("решение","decision","/dɪˈsɪʒən/","noun","singular: decision • plural: decisions","It was a hard decision.","решение"),
+  mk("полагаться","rely on","/rɪˈlaɪ ɑːn/","phrasal verb","rely on • relied on • relied on • relying on","You can rely on me.","полагаться на"),
+  mk("забей","forget it","/fərˈɡet ɪt/","phrase","","Forget it, it's fine.","забей / неважно"),
+  mk("в итоге","in the end","/ɪn ði end/","phrase","","In the end, we stayed home.","в итоге"),
+  mk("полностью","entirely","/ɪnˈtaɪərli/","adverb","","I entirely agree.","полностью"),
+  mk("придумать","come up with","/kʌm ʌp wɪð/","phrasal verb","come up with • came up with • come up with","She came up with a good idea.","придумать")
+];
+const el = id => document.getElementById(id);
+
+function normalizeCard(x){
+  if(!x || typeof x.ru !== "string" || typeof x.en !== "string") return null;
+  return { id: x.id || (crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())), ru:x.ru.trim(), en:x.en.trim(),
+    phonetic: typeof x.phonetic==="string" ? x.phonetic.trim() : "",
+    partOfSpeech: typeof x.partOfSpeech==="string" ? x.partOfSpeech.trim() : "",
+    forms: typeof x.forms==="string" ? x.forms.trim() : "",
+    example: typeof x.example==="string" ? x.example.trim() : "",
+    note: typeof x.note==="string" ? x.note.trim() : "" };
+}
+function loadCards(){ try{ const raw = localStorage.getItem(CARD_KEY); if(!raw) return [...demoCards]; const parsed=JSON.parse(raw); if(Array.isArray(parsed)){ const arr=parsed.map(normalizeCard).filter(Boolean); if(arr.length) return arr; } }catch(e){} return [...demoCards]; }
+function saveCards(){ localStorage.setItem(CARD_KEY, JSON.stringify(cards)); }
+function loadReviewIds(){ try{ const parsed=JSON.parse(localStorage.getItem(REVIEW_KEY)||"[]"); return Array.isArray(parsed)?parsed:[]; }catch(e){ return []; } }
+function saveReviewIds(){ localStorage.setItem(REVIEW_KEY, JSON.stringify(reviewIds)); }
+function loadVoiceSettings(){ try{ return Object.assign({mode:"auto",rate:1,exact:""}, JSON.parse(localStorage.getItem(VOICE_KEY)||"{}")); }catch(e){ return {mode:"auto",rate:1,exact:""}; } }
+function saveVoiceSettings(){ localStorage.setItem(VOICE_KEY, JSON.stringify(voiceSettings)); }
+
+let cards = loadCards();
+let reviewIds = loadReviewIds();
+let voiceSettings = loadVoiceSettings();
+let filtered = [...cards];
+let currentIndex = filtered.length ? 0 : -1;
+let showFront = true;
+let reviewCards = [];
+let reviewIndex = -1;
+let reviewFront = true;
+let quizState = {questions:[], index:-1, correct:0, wrong:0, answered:false};
+
+function esc(s){ return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(btn => btn.classList.toggle("active", btn.dataset.tab === name));
+  document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active"));
+  const pane = el(name + "View");
+  if(pane) pane.classList.add("active");
+  if(name === "voice") populateVoiceControls();
+  if(name === "review") renderReviewList();
+}
+
+function refreshFiltered(){
+  const q = el("search").value.trim().toLowerCase();
+  filtered = cards.filter(c => c.ru.toLowerCase().includes(q) || c.en.toLowerCase().includes(q));
+  currentIndex = filtered.length ? Math.min(Math.max(currentIndex,0), filtered.length-1) : -1;
+  renderStudyList();
+  renderStudyCard();
+}
+function renderStudyList(){
+  el("countText").textContent = filtered.length ? `Найдено карточек: ${filtered.length}` : "Ничего не найдено";
+  const list = el("list");
+  list.innerHTML = "";
+  filtered.forEach((c,i)=>{
+    const div = document.createElement("div");
+    div.className = "item" + (i===currentIndex ? " active" : "");
+    div.innerHTML = `<div class="ru">${esc(c.ru)}</div><div class="en">${esc(c.en)}</div>`;
+    div.onclick = ()=>{ currentIndex=i; showFront=true; renderStudyList(); renderStudyCard(); };
+    list.appendChild(div);
+  });
+}
+function renderStudyCard(){
+  const c = filtered[currentIndex];
+  if(!c){
+    el("cardBadge").textContent = "Нет карточки";
+    el("cardWord").textContent = "Карточка не выбрана";
+    el("cardPhon").textContent = "";
+    el("cardMeta").textContent = "Попробуй поиск или верни демо-карточки.";
+    el("cardDetails").innerHTML = "";
+    return;
+  }
+  if(showFront){
+    el("cardBadge").textContent = "Лицевая сторона";
+    el("cardWord").textContent = c.en;
+    el("cardPhon").textContent = c.phonetic || "";
+    el("cardMeta").textContent = "Русский перевод: " + c.ru;
+  }else{
+    el("cardBadge").textContent = "Обратная сторона";
+    el("cardWord").textContent = c.ru;
+    el("cardPhon").textContent = "";
+    el("cardMeta").textContent = "English: " + c.en;
+  }
+  const chips = [];
+  if(c.partOfSpeech) chips.push(`<span class="chip">${esc(c.partOfSpeech)}</span>`);
+  if(c.forms) chips.push(`<span class="chip">${esc(c.forms)}</span>`);
+  if(c.example) chips.push(`<span class="chip">Ex: ${esc(c.example)}</span>`);
+  if(c.note) chips.push(`<span class="chip">${esc(c.note)}</span>`);
+  el("cardDetails").innerHTML = chips.join("");
+}
+function currentCard(){ return filtered[currentIndex] || null; }
+function flipCard(){ if(currentCard()){ showFront=!showFront; renderStudyCard(); } }
+function nextCard(){ if(filtered.length){ currentIndex=(currentIndex+1)%filtered.length; showFront=true; renderStudyList(); renderStudyCard(); } }
+
+function refreshReviewCards(){
+  reviewCards = cards.filter(c => reviewIds.includes(c.id));
+  reviewIndex = reviewCards.length ? Math.min(Math.max(reviewIndex,0), reviewCards.length-1) : -1;
+}
+function renderReviewList(){
+  refreshReviewCards();
+  const list = el("reviewList");
+  list.innerHTML = "";
+  if(!reviewCards.length){
+    list.innerHTML = '<div class="small">Список повторения пуст. Ошибайся в quiz или жми "Сложно".</div>';
+    renderReviewCard();
+    return;
+  }
+  reviewCards.forEach((c,i)=>{
+    const div = document.createElement("div");
+    div.className = "item" + (i===reviewIndex ? " active" : "");
+    div.innerHTML = `<div class="ru">${esc(c.ru)}</div><div class="en">${esc(c.en)}</div>`;
+    div.onclick = ()=>{ reviewIndex=i; reviewFront=true; renderReviewList(); renderReviewCard(); };
+    list.appendChild(div);
+  });
+  renderReviewCard();
+}
+function currentReviewCard(){ return reviewCards[reviewIndex] || null; }
+function renderReviewCard(){
+  const c = currentReviewCard();
+  if(!c){
+    el("reviewWord").textContent = "Нет слов для повторения";
+    el("reviewPhon").textContent = "";
+    el("reviewMeta").textContent = "Отмечай слова как сложные — они появятся здесь.";
+    el("reviewDetails").innerHTML = "";
+    return;
+  }
+  if(reviewFront){
+    el("reviewWord").textContent = c.en;
+    el("reviewPhon").textContent = c.phonetic || "";
+    el("reviewMeta").textContent = "Попробуй вспомнить русский перевод.";
+  }else{
+    el("reviewWord").textContent = c.ru;
+    el("reviewPhon").textContent = "";
+    el("reviewMeta").textContent = "English: " + c.en;
+  }
+  const chips = [];
+  if(c.partOfSpeech) chips.push(`<span class="chip">${esc(c.partOfSpeech)}</span>`);
+  if(c.forms) chips.push(`<span class="chip">${esc(c.forms)}</span>`);
+  if(c.example) chips.push(`<span class="chip">Ex: ${esc(c.example)}</span>`);
+  if(c.note) chips.push(`<span class="chip">${esc(c.note)}</span>`);
+  el("reviewDetails").innerHTML = chips.join("");
+}
+function addToReview(card){ if(card && !reviewIds.includes(card.id)){ reviewIds.push(card.id); saveReviewIds(); renderReviewList(); } }
+function removeFromReview(card){ if(card){ reviewIds = reviewIds.filter(id => id !== card.id); saveReviewIds(); renderReviewList(); } }
+
+function scoreEnglishVoice(v){
+  const s = (v.name + " " + v.lang).toLowerCase();
+  let score = 0;
+  if((v.lang||"").toLowerCase() === "en-us") score += 100;
+  if(s.includes("samantha")) score += 30;
+  if(s.includes("alex")) score += 28;
+  if(s.includes("ava")) score += 24;
+  if(s.includes("allison")) score += 22;
+  if(s.includes("natural")) score += 15;
+  if(v.default) score += 5;
+  return score;
+}
+function getEnglishVoices(){ return (speechSynthesis.getVoices() || []).filter(v => /^en/i.test(v.lang || "")).sort((a,b)=>scoreEnglishVoice(b)-scoreEnglishVoice(a) || a.name.localeCompare(b.name)); }
+function isFemale(name){ const s=(name||"").toLowerCase(); return ["samantha","ava","allison","victoria","zira","female","siri"].some(x => s.includes(x)); }
+function isMale(name){ const s=(name||"").toLowerCase(); return ["alex","daniel","fred","male","tom"].some(x => s.includes(x)); }
+function voiceId(v){ return `${v.name}__${v.lang}`; }
+function pickEnglishVoice(){
+  const voices = getEnglishVoices();
+  if(!voices.length) return null;
+  if(voiceSettings.mode === "exact" && voiceSettings.exact){
+    const exact = voices.find(v => voiceId(v) === voiceSettings.exact);
+    if(exact) return exact;
+  }
+  if(voiceSettings.mode === "female") return voices.find(v => isFemale(v.name)) || voices[0];
+  if(voiceSettings.mode === "male") return voices.find(v => isMale(v.name)) || voices[0];
+  return voices[0];
+}
+function pickRussianVoice(){ const voices = speechSynthesis.getVoices() || []; return voices.find(v => (v.lang||"").toLowerCase()==="ru-ru") || voices.find(v => /^ru/i.test(v.lang||"")) || null; }
+function populateVoiceControls(){
+  const exact = el("voiceExact");
+  exact.innerHTML = "";
+  const voices = getEnglishVoices();
+  voices.forEach(v=>{
+    const opt = document.createElement("option");
+    opt.value = voiceId(v);
+    opt.textContent = `${v.name} — ${v.lang}${v.default ? " • default" : ""}`;
+    if(voiceSettings.exact === opt.value) opt.selected = true;
+    exact.appendChild(opt);
+  });
+  el("voiceMode").value = voiceSettings.mode;
+  el("voiceRate").value = String(voiceSettings.rate);
+  const chosen = pickEnglishVoice();
+  el("voiceStatus").textContent = chosen ? `Сейчас выбран: ${chosen.name} (${chosen.lang})` : "Английские голоса не найдены.";
+}
+function speak(text, lang){
+  if(!("speechSynthesis" in window)){ alert("Озвучка не поддерживается."); return; }
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = Number(voiceSettings.rate || 1);
+  u.lang = lang;
+  if(lang === "en-US"){
+    const v = pickEnglishVoice();
+    if(v){ u.voice = v; u.lang = v.lang || "en-US"; }
+  }else{
+    const v = pickRussianVoice();
+    if(v){ u.voice = v; u.lang = v.lang || "ru-RU"; }
+  }
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+
+function offlineAutofillData(word){
+  const db = {
+    "forget": {phonetic:"/fərˈɡet/", partOfSpeech:"verb", forms:"forget • forgot • forgotten • forgetting", example:"I forgot my keys.", note:"перестать помнить что-то"},
+    "meet up": {phonetic:"/miːt ʌp/", partOfSpeech:"phrasal verb", forms:"meet up • met up • met up", example:"Let's meet up tomorrow.", note:"встречаться"},
+    "decision": {phonetic:"/dɪˈsɪʒən/", partOfSpeech:"noun", forms:"singular: decision • plural: decisions", example:"It was a hard decision.", note:"решение"},
+    "income": {phonetic:"/ˈɪnkʌm/", partOfSpeech:"noun", forms:"singular: income", example:"My income is stable.", note:"доход"},
+    "entirely": {phonetic:"/ɪnˈtaɪərli/", partOfSpeech:"adverb", forms:"", example:"I entirely agree.", note:"полностью"},
+    "come up with": {phonetic:"/kʌm ʌp wɪð/", partOfSpeech:"phrasal verb", forms:"come up with • came up with • come up with", example:"She came up with a good idea.", note:"придумать"},
+    "rely on": {phonetic:"/rɪˈlaɪ ɑːn/", partOfSpeech:"phrasal verb", forms:"rely on • relied on • relied on • relying on", example:"You can rely on me.", note:"полагаться на"},
+    "what a coincidence": {phonetic:"/ˌkoʊˈɪnsɪdəns/", partOfSpeech:"phrase", forms:"", example:"What a coincidence!","note":"какое совпадение"},
+    "forget it": {phonetic:"/fərˈɡet ɪt/", partOfSpeech:"phrase", forms:"", example:"Forget it, it's fine.", note:"забей / неважно"},
+    "in the end": {phonetic:"/ɪn ði end/", partOfSpeech:"phrase", forms:"", example:"In the end, we stayed home.", note:"в итоге"}
+  };
+  return db[word.toLowerCase()] || null;
+}
+function guessForms(word, pos){
+  const w = word.trim(), lower = w.toLowerCase();
+  if((pos||"").includes("verb")){
+    if(lower.endsWith("e")) return `${w} • ${w}d • ${w}d • ${w.slice(0,-1)}ing`;
+    if(lower.endsWith("y") && !/[aeiou]y$/.test(lower)) return `${w} • ${w.slice(0,-1)}ied • ${w.slice(0,-1)}ied • ${w.slice(0,-1)}ying`;
+    return `${w} • ${w}ed • ${w}ed • ${w}ing`;
+  }
+  if((pos||"").includes("noun")){
+    if(lower.endsWith("y") && !/[aeiou]y$/.test(lower)) return `singular: ${w} • plural: ${w.slice(0,-1)}ies`;
+    return `singular: ${w} • plural: ${w}s`;
+  }
+  return "";
+}
+function autofillNewWord(){
+  const en = el("newEn").value.trim();
+  if(!en){ alert("Сначала введи английское слово."); return; }
+  const found = offlineAutofillData(en);
+  if(found){
+    if(!el("newPhon").value.trim()) el("newPhon").value = found.phonetic || "";
+    if(!el("newPos").value.trim()) el("newPos").value = found.partOfSpeech || "";
+    if(!el("newForms").value.trim()) el("newForms").value = found.forms || "";
+    if(!el("newExample").value.trim()) el("newExample").value = found.example || "";
+    if(!el("newNote").value.trim()) el("newNote").value = found.note || "";
+    alert("Автозаполнение применено.");
+    return;
+  }
+  const pos = el("newPos").value.trim() || "verb";
+  if(!el("newForms").value.trim()) el("newForms").value = guessForms(en, pos);
+  if(!el("newNote").value.trim()) el("newNote").value = "Проверь вручную";
+  alert("Для этого слова точной локальной записи нет. Я подставил базовые формы-шаблоны.");
+}
+function addCard(){
+  const ru = el("newRu").value.trim();
+  const en = el("newEn").value.trim();
+  if(!ru || !en){ alert("Нужно заполнить русский и английский вариант."); return; }
+  cards.unshift({
+    id: crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),
+    ru, en,
+    phonetic: el("newPhon").value.trim(),
+    partOfSpeech: el("newPos").value.trim(),
+    forms: el("newForms").value.trim(),
+    example: el("newExample").value.trim(),
+    note: el("newNote").value.trim()
+  });
+  saveCards();
+  ["newRu","newEn","newPhon","newPos","newForms","newExample","newNote"].forEach(id=>el(id).value="");
+  el("search").value = "";
+  refreshFiltered();
+  alert("Карточка добавлена.");
+}
+function restoreDemoCards(){
+  const have = new Set(cards.map(c => `${c.ru.toLowerCase()}__${c.en.toLowerCase()}`));
+  const add = demoCards.filter(c => !have.has(`${c.ru.toLowerCase()}__${c.en.toLowerCase()}`));
+  cards = cards.concat(add);
+  saveCards();
+  refreshFiltered();
+  alert(`Добавлено демо-карточек: ${add.length}`);
+}
+function exportCards(){ el("jsonBox").value = JSON.stringify(cards, null, 2); el("jsonBox").focus(); el("jsonBox").select(); }
+function importCards(){
+  try{
+    const parsed = JSON.parse(el("jsonBox").value);
+    if(!Array.isArray(parsed)) throw new Error("JSON должен быть массивом");
+    const imported = parsed.map(normalizeCard).filter(Boolean);
+    if(!imported.length) throw new Error("Нет валидных карточек");
+    cards = imported;
+    saveCards();
+    refreshFiltered();
+    renderReviewList();
+    alert("Импорт выполнен.");
+  }catch(e){ alert("Ошибка импорта: " + e.message); }
+}
+function downloadBackup(){
+  const blob = new Blob([JSON.stringify(cards, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "words-trainer-backup.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function clearAll(){
+  if(!confirm("Очистить все карточки?")) return;
+  cards = [];
+  reviewIds = [];
+  saveCards();
+  saveReviewIds();
+  refreshFiltered();
+  renderReviewList();
+}
+
+function shuffle(a){ const x=[...a]; for(let i=x.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [x[i],x[j]]=[x[j],x[i]]; } return x; }
+function makeQuestion(card, mode){
+  const others = shuffle(cards.filter(c=>c.id!==card.id)).slice(0,3);
+  if(mode==="mc_en_ru") return {mode, prompt:card.en, answer:card.ru, options:shuffle([card.ru, ...others.map(c=>c.ru)])};
+  if(mode==="mc_ru_en") return {mode, prompt:card.ru, answer:card.en, options:shuffle([card.en, ...others.map(c=>c.en)])};
+  return {mode, prompt:card.ru, answer:card.en, options:[]};
+}
+function startQuiz(){
+  if(cards.length < 1){ alert("Нет карточек для теста."); return; }
+  const mode = el("quizMode").value;
+  if(mode !== "typing_ru_en" && cards.length < 4){ alert("Для теста с вариантами нужно хотя бы 4 карточки."); return; }
+  const len = Math.min(Number(el("quizLength").value), cards.length);
+  quizState = {questions: shuffle(cards).slice(0,len).map(c=>makeQuestion(c, mode)), index:0, correct:0, wrong:0, answered:false};
+  renderQuiz();
+}
+function currentQuestion(){ return quizState.questions[quizState.index] || null; }
+function renderQuiz(){
+  const q = currentQuestion();
+  el("quizProgress").textContent = quizState.questions.length ? `${Math.min(quizState.index+1, quizState.questions.length)} / ${quizState.questions.length}` : "0 / 0";
+  el("quizCorrect").textContent = `✅ ${quizState.correct}`;
+  el("quizWrong").textContent = `❌ ${quizState.wrong}`;
+  el("quizResult").textContent = "";
+  if(!q){
+    el("quizQuestion").textContent = quizState.questions.length ? "Тест завершён" : "Нажми “Начать тест”";
+    el("quizHint").textContent = quizState.questions.length ? `Готово. Правильных: ${quizState.correct}, ошибок: ${quizState.wrong}.` : "После старта здесь появится вопрос.";
+    el("quizOptions").style.display = "none";
+    el("quizTyping").style.display = "none";
+    return;
+  }
+  el("quizQuestion").textContent = q.prompt;
+  el("quizHint").textContent = q.mode==="mc_en_ru" ? "Выбери правильный русский перевод." : q.mode==="mc_ru_en" ? "Выбери правильный английский перевод." : "Введи английское слово.";
+  if(q.mode.startsWith("mc_")){
+    const box = el("quizOptions");
+    box.style.display = "grid";
+    el("quizTyping").style.display = "none";
+    box.innerHTML = "";
+    q.options.forEach(opt=>{
+      const btn = document.createElement("button");
+      btn.className = "quiz-option";
+      btn.textContent = opt;
+      btn.disabled = quizState.answered;
+      btn.onclick = ()=>answerOption(opt, btn);
+      box.appendChild(btn);
+    });
+  }else{
+    el("quizOptions").style.display = "none";
+    el("quizTyping").style.display = "block";
+    el("quizInput").value = "";
+    el("quizInput").disabled = quizState.answered;
+  }
+}
+function answerOption(value, btn){
+  const q = currentQuestion();
+  if(!q || quizState.answered) return;
+  quizState.answered = true;
+  const buttons = [...document.querySelectorAll(".quiz-option")];
+  buttons.forEach(b=>{
+    b.disabled = true;
+    if(b.textContent === q.answer) b.classList.add("correct");
+    if(b === btn && value !== q.answer) b.classList.add("wrong");
+  });
+  if(value === q.answer){
+    quizState.correct++;
+    el("quizResult").textContent = "Верно.";
+  }else{
+    quizState.wrong++;
+    el("quizResult").textContent = `Неправильно. Правильный ответ: ${q.answer}`;
+    const card = cards.find(c => c.en===q.prompt || c.ru===q.prompt || c.en===q.answer || c.ru===q.answer);
+    if(card) addToReview(card);
+  }
+  el("quizCorrect").textContent = `✅ ${quizState.correct}`;
+  el("quizWrong").textContent = `❌ ${quizState.wrong}`;
+}
+function submitTyping(showAnswer=false){
+  const q = currentQuestion();
+  if(!q || quizState.answered) return;
+  quizState.answered = true;
+  el("quizInput").disabled = true;
+  const value = el("quizInput").value.trim().toLowerCase();
+  const answer = q.answer.trim().toLowerCase();
+  if(showAnswer){
+    quizState.wrong++;
+    el("quizResult").textContent = `Ответ: ${q.answer}`;
+  }else if(value === answer){
+    quizState.correct++;
+    el("quizResult").textContent = "Верно.";
+  }else{
+    quizState.wrong++;
+    el("quizResult").textContent = `Неправильно. Правильный ответ: ${q.answer}`;
+    const card = cards.find(c => c.ru===q.prompt && c.en===q.answer);
+    if(card) addToReview(card);
+  }
+  el("quizCorrect").textContent = `✅ ${quizState.correct}`;
+  el("quizWrong").textContent = `❌ ${quizState.wrong}`;
+}
+function nextQuiz(){
+  if(!quizState.questions.length) return;
+  if(!quizState.answered){ el("quizResult").textContent = "Сначала ответь на вопрос."; return; }
+  quizState.index++;
+  quizState.answered = false;
+  renderQuiz();
+}
+function resetQuiz(){ quizState = {questions:[], index:-1, correct:0, wrong:0, answered:false}; renderQuiz(); }
+
+document.querySelectorAll(".tab").forEach(btn => btn.addEventListener("click", ()=>switchTab(btn.dataset.tab)));
+el("search").addEventListener("input", refreshFiltered);
+el("card").addEventListener("click", flipCard);
+el("flipBtn").addEventListener("click", flipCard);
+el("nextBtn").addEventListener("click", nextCard);
+el("speakEnBtn").addEventListener("click", ()=>{ const c=currentCard(); if(c) speak(c.en,"en-US"); });
+el("speakRuBtn").addEventListener("click", ()=>{ const c=currentCard(); if(c) speak(c.ru,"ru-RU"); });
+
+el("startReviewBtn").addEventListener("click", ()=>{ refreshReviewCards(); reviewIndex = reviewCards.length ? 0 : -1; reviewFront = true; renderReviewList(); });
+el("reviewCard").addEventListener("click", ()=>{ if(currentReviewCard()){ reviewFront = !reviewFront; renderReviewCard(); } });
+el("reviewFlipBtn").addEventListener("click", ()=>{ if(currentReviewCard()){ reviewFront = !reviewFront; renderReviewCard(); } });
+el("reviewSpeakEnBtn").addEventListener("click", ()=>{ const c=currentReviewCard(); if(c) speak(c.en,"en-US"); });
+el("reviewSpeakRuBtn").addEventListener("click", ()=>{ const c=currentReviewCard(); if(c) speak(c.ru,"ru-RU"); });
+el("reviewNextBtn").addEventListener("click", ()=>{ if(reviewCards.length){ reviewIndex=(reviewIndex+1)%reviewCards.length; reviewFront=true; renderReviewList(); } });
+el("markHardBtn").addEventListener("click", ()=>{ const c=currentReviewCard() || currentCard(); if(c){ addToReview(c); alert("Слово оставлено в повторении."); } });
+el("markLearnedBtn").addEventListener("click", ()=>{ const c=currentReviewCard(); if(c){ removeFromReview(c); alert("Слово убрано из повторения."); } });
+el("clearReviewBtn").addEventListener("click", ()=>{ reviewIds=[]; saveReviewIds(); renderReviewList(); });
+
+el("autofillBtn").addEventListener("click", autofillNewWord);
+el("restoreDemoBtn").addEventListener("click", restoreDemoCards);
+el("addBtn").addEventListener("click", addCard);
+el("exportBtn").addEventListener("click", exportCards);
+el("importBtn").addEventListener("click", importCards);
+el("downloadBtn").addEventListener("click", downloadBackup);
+el("clearAllBtn").addEventListener("click", clearAll);
+
+el("startQuizBtn").addEventListener("click", startQuiz);
+el("nextQuizBtn").addEventListener("click", nextQuiz);
+el("resetQuizBtn").addEventListener("click", resetQuiz);
+el("submitQuizBtn").addEventListener("click", ()=>submitTyping(false));
+el("showAnswerBtn").addEventListener("click", ()=>submitTyping(true));
+el("speakQuizBtn").addEventListener("click", ()=>{
+  const q = currentQuestion();
+  if(!q) return;
+  if(q.mode==="mc_en_ru") speak(q.prompt, "en-US");
+  else speak(q.answer, "en-US");
+});
+el("quizInput").addEventListener("keydown", e=>{ if(e.key==="Enter") submitTyping(false); });
+
+el("voiceMode").addEventListener("change", ()=>{ voiceSettings.mode = el("voiceMode").value; saveVoiceSettings(); populateVoiceControls(); });
+el("voiceRate").addEventListener("change", ()=>{ voiceSettings.rate = Number(el("voiceRate").value); saveVoiceSettings(); populateVoiceControls(); });
+el("voiceExact").addEventListener("change", ()=>{ voiceSettings.exact = el("voiceExact").value; saveVoiceSettings(); populateVoiceControls(); });
+el("saveVoiceBtn").addEventListener("click", ()=>{ voiceSettings.mode = el("voiceMode").value; voiceSettings.rate = Number(el("voiceRate").value); voiceSettings.exact = el("voiceExact").value; saveVoiceSettings(); alert("Настройки голоса сохранены."); });
+el("refreshVoicesBtn").addEventListener("click", populateVoiceControls);
+el("testVoiceBtn").addEventListener("click", ()=>speak("This is a voice test.", "en-US"));
+el("testRuBtn").addEventListener("click", ()=>speak("Проверка русского голоса.", "ru-RU"));
+
+if("speechSynthesis" in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = populateVoiceControls; }
+
+switchTab("study");
+refreshFiltered();
+renderReviewList();
+renderQuiz();
+populateVoiceControls();
+</script>
+</body>
+</html>
