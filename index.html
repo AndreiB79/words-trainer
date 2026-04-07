@@ -773,6 +773,55 @@ el("testVoiceBtn").addEventListener("click", ()=>speak("This is a voice test.", 
 el("testRuBtn").addEventListener("click", ()=>speak("Проверка русского голоса.", "ru-RU"));
 
 if("speechSynthesis" in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = populateVoiceControls; }
+  let audioIndex = 0;
+let audioRunning = false;
+let audioTimer = null;
+
+function playAudioSequence(){
+  if(!audioRunning || !cards.length) return;
+
+  if(audioIndex >= cards.length){
+    audioIndex = 0;
+  }
+
+  const card = cards[audioIndex];
+
+  el("audioWord").textContent = card.en;
+  el("audioMeta").textContent = card.ru;
+
+  speak(card.en, "en-US");
+
+  audioTimer = setTimeout(() => {
+    if(!audioRunning) return;
+
+    speak(card.ru, "ru-RU");
+
+    audioTimer = setTimeout(() => {
+      audioIndex++;
+      playAudioSequence();
+    }, 1800);
+
+  }, 1400);
+}
+
+function startAudio(){
+  if(!cards.length){
+    alert("Нет карточек для воспроизведения.");
+    return;
+  }
+  audioRunning = true;
+  audioIndex = 0;
+  playAudioSequence();
+}
+
+function stopAudio(){
+  audioRunning = false;
+  if(audioTimer) clearTimeout(audioTimer);
+  speechSynthesis.cancel();
+
+  el("audioWord").textContent = "Остановлено";
+  el("audioMeta").textContent = "";
+}
 
 switchTab("study");
 refreshFiltered();
