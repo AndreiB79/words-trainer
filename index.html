@@ -195,14 +195,72 @@
     <div id="audioView" class="tab-pane">
   <div class="two">
     <div class="panel">
-      <div style="font-weight:900;margin-bottom:10px">Audio Mode</div>
-      <div class="small">Автовоспроизведение карточек</div>
+     <div style="font-weight:900;margin-bottom:10px">Audio Mode</div>
+<div class="small">Автовоспроизведение карточек</div>
 
-      <div class="actions" style="margin-top:12px">
-        <button id="audioPlayBtn">▶️ Play</button>
-        <button class="secondary" id="audioStopBtn">⏹ Stop</button>
-      </div>
-    </div>
+<div class="sp8"></div>
+
+<div>
+  <div class="small" style="margin-bottom:6px;">Направление</div>
+  <select id="audioDirection">
+    <option value="en-ru" selected>English → Russian</option>
+    <option value="ru-en">Russian → English</option>
+  </select>
+</div>
+
+<div class="sp8"></div>
+
+<div>
+  <div class="small" style="margin-bottom:6px;">Скорость</div>
+  <select id="audioRate">
+    <option value="0.8">0.80 — медленно</option>
+    <option value="0.9">0.90 — чуть медленнее</option>
+    <option value="1" selected>1.00 — нормально</option>
+    <option value="1.1">1.10 — чуть быстрее</option>
+    <option value="1.2">1.20 — быстро</option>
+  </select>
+</div>
+
+<div class="sp8"></div>
+
+<div>
+  <div class="small" style="margin-bottom:6px;">Пауза между словом и переводом</div>
+  <select id="audioGap1">
+    <option value="800">0.8 сек</option>
+    <option value="1200">1.2 сек</option>
+    <option value="1400" selected>1.4 сек</option>
+    <option value="1800">1.8 сек</option>
+    <option value="2200">2.2 сек</option>
+  </select>
+</div>
+
+<div class="sp8"></div>
+
+<div>
+  <div class="small" style="margin-bottom:6px;">Пауза между карточками</div>
+  <select id="audioGap2">
+    <option value="1000">1.0 сек</option>
+    <option value="1400">1.4 сек</option>
+    <option value="1800" selected>1.8 сек</option>
+    <option value="2200">2.2 сек</option>
+    <option value="3000">3.0 сек</option>
+  </select>
+</div>
+
+<div class="sp8"></div>
+
+<div>
+  <label style="display:flex;align-items:center;gap:8px;font-size:14px;">
+    <input type="checkbox" id="audioShuffle" />
+    Перемешивать карточки
+  </label>
+</div>
+
+<div class="actions" style="margin-top:12px">
+  <button id="audioPlayBtn">▶️ Play</button>
+  <button class="secondary" id="audioPauseBtn">⏸ Pause</button>
+  <button class="secondary" id="audioStopBtn">⏹ Stop</button>
+</div>
 
     <div class="panel">
       <div class="word" id="audioWord">Нажми Play</div>
